@@ -22,4 +22,4 @@ spring:
 
 logging:
   level:
-    com.hxs.bt: debug
+    com.hxs.bt: info

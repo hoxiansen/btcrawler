@@ -1,6 +1,7 @@
 package com.hxs.bt.socket;
 
 import com.dampcake.bencode.Bencode;
+import com.dampcake.bencode.BencodeException;
 import com.dampcake.bencode.Type;
 import com.hxs.bt.common.factory.DHTServerEventLoopFactory;
 import com.hxs.bt.common.manager.NodeManager;
@@ -90,18 +91,28 @@ public class DHTServer {
         private final int index;
 
         @Override
-        public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        public void channelActive(ChannelHandlerContext ctx) {
             sender.setChannel(ctx.channel(), index);
             log.info("服务器-" + index + "启动完成");
             countDownLatch.countDown();
         }
 
         @Override
-        protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+            log.info("Exception:{}", cause.toString());
+        }
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) {
             byte[] bytes = new byte[msg.content().readableBytes()];
             msg.content().readBytes(bytes);
+            Map<String, Object> map;
+            try {
+                map = bencode.decode(bytes, Type.DICTIONARY);
+            } catch (BencodeException e) {
+                return;
+            }
             InetSocketAddress sender = msg.sender();
-            Map<String, Object> map = bencode.decode(bytes, Type.DICTIONARY);
             //如果不是正常的krpc数据包，一律以错误处理
             String type = getObject(map, "y", "e");
             switch (type) {

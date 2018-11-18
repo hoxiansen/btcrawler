@@ -11,7 +11,8 @@ import java.nio.charset.Charset;
  * @date 2018/11/13 10:26
  */
 public class BTUtils {
-    private static final int TID_LENGTH = 2;
+    //设置为2导致有些服务器判定为invalid transaction id，设置为1看看效果
+    private static final int TID_LENGTH = 1;
     private static final int FAKE_NID_LEN = 1;
     private static final int TOKEN_LEN = 2;
     private static Charset charset = CharsetUtil.ISO_8859_1;

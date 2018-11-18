@@ -1,9 +1,6 @@
 package com.hxs.bt.persistent.infohash;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Objects;
 
 /**
@@ -11,11 +8,13 @@ import java.util.Objects;
  * @date 2018/11/18 13:00
  */
 @Entity
+@Table(name = "infohash")
 public class InfoHash {
     private int id;
     private String infoHash;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     public int getId() {
         return id;
