@@ -37,12 +37,18 @@ public class DHTServer {
     private final Bencode bencode;
     private final Sender sender;
     private final NodeManager nodeManager;
+    private final InfoHashHandler infoHashHandler;
 
-    public DHTServer(Config config, Bencode bencode, Sender sender, NodeManager nodeManager) {
+    public DHTServer(Config config,
+                     Bencode bencode,
+                     Sender sender,
+                     NodeManager nodeManager,
+                     InfoHashHandler infoHashHandler) {
         this.config = config;
         this.bencode = bencode;
         this.sender = sender;
         this.nodeManager = nodeManager;
+        this.infoHashHandler = infoHashHandler;
     }
 
     public void start(int port, int index, CountDownLatch countDownLatch) {
@@ -58,7 +64,8 @@ public class DHTServer {
                 .handler(new ChannelInitializer<NioDatagramChannel>() {
                     @Override
                     protected void initChannel(NioDatagramChannel ch) throws Exception {
-                        ch.pipeline().addLast(new DHTServerHandler(countDownLatch, config, bencode, sender, nodeManager, index));
+                        ch.pipeline().addLast(new DHTServerHandler(countDownLatch, config, bencode, sender,
+                                nodeManager, infoHashHandler, index));
                     }
                 });
         try {
@@ -72,7 +79,6 @@ public class DHTServer {
 
     @AllArgsConstructor
     @Slf4j
-    @ChannelHandler.Sharable
     public static class DHTServerHandler extends SimpleChannelInboundHandler<DatagramPacket> {
         //countDownLatch用来等待所有的服务器初始化完毕之后再进行下一步
         private final CountDownLatch countDownLatch;
@@ -80,12 +86,13 @@ public class DHTServer {
         private final Bencode bencode;
         private final Sender sender;
         private final NodeManager nodeManager;
+        private final InfoHashHandler infoHashHandler;
         private final int index;
 
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
             sender.setChannel(ctx.channel(), index);
-            log.info("服务器-" + index+"启动完成");
+            log.info("服务器-" + index + "启动完成");
             countDownLatch.countDown();
         }
 
@@ -170,7 +177,7 @@ public class DHTServer {
             log.debug("收到GetPeers");
             sender.sendGetPeersReply(tid, otherNid, address, index);
             if (config.getHandleGetPeersInfoHash()) {
-                InfoHashHandler.handleInfoHash(infoHash);
+                infoHashHandler.handleInfoHash(infoHash);
             }
         }
 
@@ -182,7 +189,7 @@ public class DHTServer {
                 return;
             }
             sender.sendAnnouncePeerReply(tid, otherNid, address, index);
-            InfoHashHandler.handleInfoHash(infoHash);
+            infoHashHandler.handleInfoHash(infoHash);
         }
 
         private void handleFindNodeReply(Map<String, Object> map, InetSocketAddress address) {

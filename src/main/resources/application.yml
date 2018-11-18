@@ -12,3 +12,14 @@ bt:
   serverEventLoopThreadNum: 200
   findNodeTaskThreadNum: 200
   handleGetPeersInfoHash: false
+
+spring:
+  datasource:
+    url: jdbc:mysql://134.175.188.140/btcrawler?useSSL=false&characterEncoding=UTF-8
+    password: 123456
+    username: hxs
+    driver-class-name: com.mysql.jdbc.Driver
+
+logging:
+  level:
+    com.hxs.bt: debug
