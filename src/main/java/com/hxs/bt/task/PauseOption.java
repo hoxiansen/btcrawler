@@ -8,7 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author HJF
  * @date 2018/11/13 11:49
  */
-public interface ITaskOption {
+public interface PauseOption {
     void start();
 
     /**

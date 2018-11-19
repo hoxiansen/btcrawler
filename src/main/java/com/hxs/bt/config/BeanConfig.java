@@ -4,6 +4,8 @@ import com.dampcake.bencode.Bencode;
 import com.hxs.bt.common.manager.NodeManager;
 import com.hxs.bt.socket.DHTServer;
 import com.hxs.bt.socket.Sender;
+import com.hxs.bt.socket.processor.AbstractProcessor;
+import com.hxs.bt.socket.processor.ProcessorManager;
 import com.hxs.bt.task.FindNodeTask;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
@@ -25,5 +27,13 @@ public class BeanConfig {
     @Bean
     public Bencode bencode() {
         return new Bencode(CharsetUtil.ISO_8859_1);
+    }
+
+    @Bean
+    public ProcessorManager processorManager(List<AbstractProcessor> processors,
+                                             Bencode bencode) {
+        ProcessorManager processorManager = new ProcessorManager(bencode);
+        processors.forEach(processorManager::register);
+        return processorManager;
     }
 }

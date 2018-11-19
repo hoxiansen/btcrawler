@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class InitNodeTask implements ITaskOption {
+public class InitNodeTask implements PauseOption {
     private final Config config;
     private final NodeManager nodeManager;
 

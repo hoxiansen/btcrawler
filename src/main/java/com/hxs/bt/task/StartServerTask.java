@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Component
-public class StartServerTask implements ITaskOption {
+public class StartServerTask implements PauseOption {
     private final DHTServer server;
     private final Config config;
 

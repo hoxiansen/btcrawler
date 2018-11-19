@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Slf4j
 @Component
-public class FindNodeTask implements ITaskOption {
+public class FindNodeTask implements PauseOption {
     private final Config config;
     private final Sender sender;
     private final NodeManager nodeManager;

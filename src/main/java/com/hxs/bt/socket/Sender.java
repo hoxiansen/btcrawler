@@ -51,10 +51,13 @@ public class Sender {
 
     public void sendFindNodeReply(String tid, String otherNid, InetSocketAddress address, int index) {
         byte[] bytes = bencode.encode(new HashMap<String, Object>() {{
-            put("t", tid);
+            put("t", Optional.ofNullable(tid).orElse(BTUtils.randTidStr()));
             put("y", "r");
             put("r", new HashMap<String, Object>() {{
-                put("id", BTUtils.fakeNidStr(config.getSelfNidList().get(index), otherNid));
+                put("id", BTUtils.fakeNidStr(
+                        config.getSelfNidList().get(index),
+                        Optional.ofNullable(otherNid).orElse(BTUtils.randNidStr())));
+                //TODO:从NodeQueue中获取Node发送出去。
                 put("nodes", "");
             }});
         }});
@@ -64,11 +67,14 @@ public class Sender {
 
     public void sendGetPeersReply(String tid, String otherNid, InetSocketAddress address, int index) {
         byte[] bytes = bencode.encode(new HashMap<String, Object>() {{
-            put("t", tid);
+            put("t", Optional.ofNullable(tid).orElse(BTUtils.randTidStr()));
             put("y", "r");
             put("r", new HashMap<String, Object>() {{
-                put("id", BTUtils.fakeNidStr(config.getSelfNidList().get(index), otherNid));
+                put("id", BTUtils.fakeNidStr(
+                        config.getSelfNidList().get(index),
+                        Optional.ofNullable(otherNid).orElse(BTUtils.randNidStr())));
                 put("token", BTUtils.getTokenStr(otherNid));
+                //TODO:同上
                 put("nodes", "");
             }});
         }});
@@ -78,10 +84,11 @@ public class Sender {
 
     public void sendPingReply(String tid, String otherNid, InetSocketAddress address, int index) {
         byte[] bytes = bencode.encode(new HashMap<String, Object>() {{
-            put("t", tid);
+            put("t", Optional.ofNullable(tid).orElse(BTUtils.randTidStr()));
             put("y", "r");
             put("r", new HashMap<String, Object>() {{
-                put("id", BTUtils.fakeNidStr(config.getSelfNidList().get(index), otherNid));
+                put("id", BTUtils.fakeNidStr(config.getSelfNidList().get(index),
+                        Optional.ofNullable(otherNid).orElse(BTUtils.randNidStr())));
             }});
         }});
         log.debug("SendPingReply");
