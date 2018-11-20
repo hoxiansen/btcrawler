@@ -30,7 +30,6 @@ public class BTUtils {
     }
 
     public static String getTokenStr(String otherNid) {
-        if (null == otherNid) return "";
         byte[] bytes = otherNid.getBytes(charset);
         byte[] token = ArrayUtils.subarray(bytes, bytes.length - TOKEN_LEN, bytes.length);
         return new String(token, charset);

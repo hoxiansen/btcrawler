@@ -21,34 +21,20 @@ public class FindNodeTask implements PauseOption {
     private final Config config;
     private final Sender sender;
     private final NodeManager nodeManager;
-    private final InitNodeTask initNodeTask;
 
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition condition = lock.newCondition();
 
     public FindNodeTask(Config config,
                         Sender sender,
-                        NodeManager nodeManager,
-                        InitNodeTask initNodeTask) {
+                        NodeManager nodeManager) {
         this.config = config;
         this.sender = sender;
         this.nodeManager = nodeManager;
-        this.initNodeTask = initNodeTask;
     }
 
     private Node getNode() throws InterruptedException {
-        Node node;
-        // 保证只有一个线程检测到node队列为空，使得initNodeTask只执行一次
-        try {
-            lock.lockInterruptibly();
-            while ((node = nodeManager.get(5, TimeUnit.SECONDS)) == null) {
-                log.info("获取Node失败，重新添加初始化Node");
-                initNodeTask.start();
-            }
-        } finally {
-            lock.unlock();
-        }
-        return node;
+        return nodeManager.get();
     }
 
     @Override
@@ -67,7 +53,7 @@ public class FindNodeTask implements PauseOption {
                         //...
                     }
                 }
-            }, "FindNodeThread-" + i).start();
+            }, "FindNode-" + i).start();
         }
     }
 }

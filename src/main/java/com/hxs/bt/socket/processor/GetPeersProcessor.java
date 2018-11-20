@@ -35,7 +35,7 @@ public class GetPeersProcessor extends AbstractProcessor {
     }
 
     @Override
-    public void process0(KrpcMessage message) {
+    public void process0(KrpcMessage message) throws InterruptedException {
         sender.sendGetPeersReply(
                 message.getT(),
                 message.getA().getId(),

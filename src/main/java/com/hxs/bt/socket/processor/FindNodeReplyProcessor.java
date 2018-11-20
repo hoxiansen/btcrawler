@@ -53,9 +53,9 @@ public class FindNodeReplyProcessor extends AbstractProcessor {
         }
         int index = 0;
         while (index < len) {
-            byte[] nid = ArrayUtils.subarray(nodes, index, index + 20);
             try {
                 InetAddress ip = Inet4Address.getByAddress(ArrayUtils.subarray(nodes, index + 20, index + 24));
+                byte[] nid = ArrayUtils.subarray(nodes, index, index + 20);
                 int port = Utils.bytesToPort(ArrayUtils.subarray(nodes, index + 24, index + 26));
                 boolean addSuccess = nodeManager.add(new Node(new String(nid, CharsetUtil.ISO_8859_1), new InetSocketAddress(ip, port)));
                 // 如果添加node不成功，说明node队列已满，直接退出不再继续添加。

@@ -1,14 +1,14 @@
 package com.hxs.bt.socket;
 
 import com.dampcake.bencode.Bencode;
+import com.hxs.bt.common.manager.NodeManager;
 import com.hxs.bt.config.Config;
 import com.hxs.bt.pojo.Node;
 import com.hxs.bt.util.BTUtils;
+import com.hxs.bt.util.Utils;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.DatagramPacket;
-import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -30,10 +30,17 @@ public class Sender {
     private List<Channel> channelList;
     private final Bencode bencode;
     private final Config config;
+    private final NodeManager nodeManager;
 
-    public Sender(Bencode bencode, Config config) {
+    public Sender(Bencode bencode, Config config,
+                  NodeManager nodeManager) {
         this.bencode = bencode;
         this.config = config;
+        this.nodeManager = nodeManager;
+    }
+
+    private Node getNode() throws InterruptedException {
+        return nodeManager.get();
     }
 
     public void sendFindNode(Node node, int index) {
@@ -49,7 +56,7 @@ public class Sender {
         send(bytes, node.getAddress(), index);
     }
 
-    public void sendFindNodeReply(String tid, String otherNid, InetSocketAddress address, int index) {
+    public void sendFindNodeReply(String tid, String otherNid, InetSocketAddress address, int index) throws InterruptedException {
         byte[] bytes = bencode.encode(new HashMap<String, Object>() {{
             put("t", Optional.ofNullable(tid).orElse(BTUtils.randTidStr()));
             put("y", "r");
@@ -57,15 +64,14 @@ public class Sender {
                 put("id", BTUtils.fakeNidStr(
                         config.getSelfNidList().get(index),
                         Optional.ofNullable(otherNid).orElse(BTUtils.randNidStr())));
-                //TODO:从NodeQueue中获取Node发送出去。
-                put("nodes", "");
+                put("nodes", Utils.encodeNode(Sender.this.getNode()));
             }});
         }});
         log.debug("SendFindNodeReply");
         send(bytes, address, index);
     }
 
-    public void sendGetPeersReply(String tid, String otherNid, InetSocketAddress address, int index) {
+    public void sendGetPeersReply(String tid, String otherNid, InetSocketAddress address, int index) throws InterruptedException {
         byte[] bytes = bencode.encode(new HashMap<String, Object>() {{
             put("t", Optional.ofNullable(tid).orElse(BTUtils.randTidStr()));
             put("y", "r");
@@ -73,9 +79,8 @@ public class Sender {
                 put("id", BTUtils.fakeNidStr(
                         config.getSelfNidList().get(index),
                         Optional.ofNullable(otherNid).orElse(BTUtils.randNidStr())));
-                put("token", BTUtils.getTokenStr(otherNid));
-                //TODO:同上
-                put("nodes", "");
+                put("token", BTUtils.getTokenStr(Optional.ofNullable(otherNid).orElse(BTUtils.randNidStr())));
+                put("nodes", Utils.encodeNode(Sender.this.getNode()));
             }});
         }});
         log.debug("SendGetPeersReply");

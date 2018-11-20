@@ -4,6 +4,8 @@ import com.hxs.bt.common.manager.NodeManager;
 import com.hxs.bt.config.Config;
 import com.hxs.bt.pojo.Node;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,7 +20,8 @@ public class InitNodeTask implements PauseOption {
     private final Config config;
     private final NodeManager nodeManager;
 
-    public InitNodeTask(Config config, NodeManager nodeManager) {
+    public InitNodeTask(Config config,
+                        NodeManager nodeManager) {
         this.config = config;
         this.nodeManager = nodeManager;
     }

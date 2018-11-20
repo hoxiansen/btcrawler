@@ -1,6 +1,11 @@
 package com.hxs.bt.util;
 
+import com.hxs.bt.pojo.Node;
 import io.netty.util.CharsetUtil;
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 /**
  * @author HJF
@@ -14,6 +19,13 @@ public class Utils {
         return bytes[1] & 0xFF | (bytes[0] & 0xFF) << 8;
     }
 
+    public static byte[] portToBytes(int port) {
+        byte[] bytes = new byte[2];
+        bytes[0] = (byte) (port >>> 8 & 0xFF);
+        bytes[1] = (byte) (port & 0xFF);
+        return bytes;
+    }
+
     public static String bytesToHexString(byte[] bytes) {
         char[] chars = new char[bytes.length * 2];
         int index = 0;
@@ -24,8 +36,16 @@ public class Utils {
         return new String(chars);
     }
 
-    public static void main(String[] args) {
-        String s = bytesToHexString(BTUtils.randNidStr().getBytes(CharsetUtil.ISO_8859_1));
-        System.out.println(s);
+    public static String encodeNode(Node node) {
+        byte[] bytes = new byte[26];
+        byte[] nid = node.getNid().getBytes(CharsetUtil.ISO_8859_1);
+        InetSocketAddress address = node.getAddress();
+        byte[] ip = address.getAddress().getAddress();
+        byte[] port = portToBytes(address.getPort());
+        //防止越界
+        System.arraycopy(bytes, 0, nid, 0, nid.length);
+        System.arraycopy(bytes, 20, ip, 0, ip.length);
+        System.arraycopy(bytes, 24, port, 0, 2);
+        return new String(bytes, CharsetUtil.ISO_8859_1);
     }
 }

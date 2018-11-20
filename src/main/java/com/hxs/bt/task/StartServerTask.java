@@ -33,7 +33,7 @@ public class StartServerTask implements PauseOption {
         CountDownLatch countDownLatch = new CountDownLatch(portList.size());
         for (int i = 0, len = portList.size(); i < len; i++) {
             final int index = i;
-            new Thread(() -> server.start(portList.get(index), index, countDownLatch),"ServerStartThread"+index).start();
+            new Thread(() -> server.start(portList.get(index), index, countDownLatch),"Server-"+index+"-Start").start();
         }
         try {
             countDownLatch.await(5, TimeUnit.SECONDS);

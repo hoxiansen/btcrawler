@@ -1,31 +1,17 @@
 package com.hxs.bt.socket;
 
-import com.dampcake.bencode.Bencode;
-import com.dampcake.bencode.BencodeException;
-import com.dampcake.bencode.Type;
 import com.hxs.bt.common.factory.DHTServerEventLoopFactory;
-import com.hxs.bt.common.manager.NodeManager;
 import com.hxs.bt.config.Config;
-import com.hxs.bt.pojo.Node;
 import com.hxs.bt.socket.processor.ProcessorManager;
-import com.hxs.bt.util.BTUtils;
-import com.hxs.bt.util.Utils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.util.CharsetUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -49,7 +35,7 @@ public class DHTServer {
 
     public void start(int port, int index, CountDownLatch countDownLatch) {
         final EventLoopGroup eventLoopGroup = new NioEventLoopGroup(
-                config.getServerEventLoopThreadNum(),
+                config.getPortList().size(),
                 new DHTServerEventLoopFactory(index));
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(eventLoopGroup)

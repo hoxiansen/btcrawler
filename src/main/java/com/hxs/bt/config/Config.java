@@ -33,17 +33,17 @@ public class Config implements InitializingBean {
      */
     private List<String> trackerList = new ArrayList<>(10);
     /**
-     * Netty服务器线程组最大数量
-     */
-    private Integer serverEventLoopThreadNum = 10;
-    /**
      * 发送FindNode请求的间隔时间
      */
     private Integer findNodeTaskIntervalMS = 1;
     /**
-     * 发送FindNode请求所用的线程数量，总量还要乘以port数量
+     * 发送FindNode请求所用的线程数量，总量不用乘以port数量
      */
     private Integer findNodeTaskThreadNum = 20;
+    /**
+     * 服务器消息处理器的线程总数，应该与findNodeTaskThreadNum差不多
+     */
+    private Integer processorThreadNum = 20;
     /**
      * Node队列最大长度
      */

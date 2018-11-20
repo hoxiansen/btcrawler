@@ -8,9 +8,9 @@ bt:
   - router.bitcomet.com:6881
   - dht.transmissionbt.com:6881
   nodeQueueMaxLength: 409600
-  findNodeTaskIntervalMS: 1
-  serverEventLoopThreadNum: 600
+  findNodeTaskIntervalMS: 0
   findNodeTaskThreadNum: 600
+  processorThreadNum: 600
   handleGetPeersInfoHash: false
 
 spring:

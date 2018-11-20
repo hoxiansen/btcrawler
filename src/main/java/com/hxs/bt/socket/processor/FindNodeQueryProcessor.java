@@ -27,7 +27,7 @@ public class FindNodeQueryProcessor extends AbstractProcessor {
     }
 
     @Override
-    public void process0(KrpcMessage message) {
+    public void process0(KrpcMessage message) throws InterruptedException {
         sender.sendFindNodeReply(
                 message.getT(),
                 message.getA().getId(),
