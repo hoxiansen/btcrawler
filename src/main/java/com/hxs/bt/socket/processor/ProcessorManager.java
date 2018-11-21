@@ -33,14 +33,12 @@ public class ProcessorManager {
         this.bencode = bencode;
         //初始化连接池
         executor = new ThreadPoolExecutor(
-                config.getPortList().size(),
+                config.getProcessorThreadNum(),
                 config.getProcessorThreadNum(),
                 5, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(config.getProcessorThreadNum()));
+                new LinkedBlockingQueue<>(config.getProcessorThreadNum()*2));
         executor.setThreadFactory(new ProcessorThreadFactory());
-        executor.setRejectedExecutionHandler((r, executor) -> {
-            log.info("处理器线程爆满:{}", executor.getTaskCount());
-        });
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
     }
 
     public void process(byte[] bytes, InetSocketAddress sender, int index) {
