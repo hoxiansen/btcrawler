@@ -20,6 +20,6 @@ public class DefaultProcessor extends AbstractProcessor {
 
     @Override
     protected void process0(KrpcMessage message) {
-        log.info("未识别的Krpc包:{}", message.toString());
+//        log.info("未识别的Krpc包:{}", message.toString());
     }
 }

@@ -20,6 +20,6 @@ public class ErrorProcessor extends AbstractProcessor {
 
     @Override
     public void process0(KrpcMessage message) {
-        log.info("errorKrpc:{}",message.getE());
+//        log.info("errorKrpc:{}",message.getE());
     }
 }
