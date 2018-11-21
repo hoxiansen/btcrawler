@@ -34,7 +34,7 @@ public class InitNodeTask implements PauseOption {
     @Override
     public void start() {
         addNode();
-        new Thread(() -> {
+        Thread monitor = new Thread(() -> {
             while (true) {
                 if (nodeManager.getSize() == 0) {
                     addNode();
@@ -45,6 +45,8 @@ public class InitNodeTask implements PauseOption {
                     //...
                 }
             }
-        }, "NodeQueueMonitor").start();
+        }, "NodeQueueMonitor");
+        monitor.setDaemon(true);
+        monitor.start();
     }
 }
