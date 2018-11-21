@@ -23,8 +23,7 @@ public class ProcessorThreadFactory implements ThreadFactory {
     public Thread newThread(Runnable r) {
         String prefix = "Processor-";
         Thread t = new FastThreadLocalThread(group, r, prefix + threadNum.getAndIncrement());
-        // 将所有的处理器线程设置为守护线程。
-        if (t.isDaemon()) t.setDaemon(true);
+        if (t.isDaemon()) t.setDaemon(false);
         if (t.getPriority() != Thread.NORM_PRIORITY) t.setPriority(Thread.NORM_PRIORITY);
         return t;
     }

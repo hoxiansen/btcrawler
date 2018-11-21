@@ -30,17 +30,11 @@ public class Sender {
     private List<Channel> channelList;
     private final Bencode bencode;
     private final Config config;
-    private final NodeManager nodeManager;
 
-    public Sender(Bencode bencode, Config config,
-                  NodeManager nodeManager) {
+    public Sender(Bencode bencode,
+                  Config config) {
         this.bencode = bencode;
         this.config = config;
-        this.nodeManager = nodeManager;
-    }
-
-    private Node getNode() throws InterruptedException {
-        return nodeManager.get();
     }
 
     public void sendFindNode(Node node, int index) {
@@ -64,7 +58,7 @@ public class Sender {
                 put("id", BTUtils.fakeNidStr(
                         config.getSelfNidList().get(index),
                         Optional.ofNullable(otherNid).orElse(BTUtils.randNidStr())));
-                put("nodes", Utils.encodeNode(Sender.this.getNode()));
+                put("nodes", "");
             }});
         }});
         log.debug("SendFindNodeReply");
@@ -80,7 +74,7 @@ public class Sender {
                         config.getSelfNidList().get(index),
                         Optional.ofNullable(otherNid).orElse(BTUtils.randNidStr())));
                 put("token", BTUtils.getTokenStr(Optional.ofNullable(otherNid).orElse(BTUtils.randNidStr())));
-                put("nodes", Utils.encodeNode(Sender.this.getNode()));
+                put("nodes", "");
             }});
         }});
         log.debug("SendGetPeersReply");
@@ -116,7 +110,7 @@ public class Sender {
         });
     }
 
-    public void setChannel(Channel channel, int index) {
+    void setChannel(Channel channel, int index) {
         this.channelList.set(index, channel);
     }
 
