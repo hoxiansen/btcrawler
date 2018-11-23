@@ -91,11 +91,11 @@ bt:
   - 101.240.97.213:16001
   - 220.114.101.228:6881
   - 188.235.156.245:4445
-  nodeQueueMaxLength: 409600
+  nodeQueueMaxLength: 204800
   findNodeTaskIntervalMS: 0
-  findNodeTaskThreadNum: 1000
-  processorThreadNum: 1000
-  handleGetPeersInfoHash: false
+  findNodeTaskThreadNum: 500
+  processorThreadNum: 2000
+  handleGetPeersInfoHash: true
 
 spring:
   datasource:
@@ -103,7 +103,14 @@ spring:
     password: 123456
     username: hxs
     driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    maxActive: 100
+    initialSize: 10
+    minIdle: 10
+    minEvictableIdleTimeMillis: 3000000
+    validationQuery: select 'x'
+    testOnBorrow: false
+    testWhileIdle: true
 
-logging:
-  level:
-    com.hxs.bt: info
+
+
