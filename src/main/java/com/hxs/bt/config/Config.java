@@ -2,8 +2,6 @@ package com.hxs.bt.config;
 
 import com.hxs.bt.pojo.Node;
 import com.hxs.bt.util.BTUtils;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.InitializingBean;
@@ -13,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -33,10 +32,6 @@ public class Config implements InitializingBean {
      */
     private List<String> trackerList = new ArrayList<>(10);
     /**
-     * 发送FindNode请求的间隔时间
-     */
-    private Integer findNodeTaskIntervalMS = 1;
-    /**
      * 发送FindNode请求所用的线程数量，总量不用乘以port数量
      */
     private Integer findNodeTaskThreadNum = 20;
@@ -51,13 +46,13 @@ public class Config implements InitializingBean {
 
     private Boolean handleGetPeersInfoHash = false;
 
-
+    //***********************以上是写在配置文件中的****************************
 
     /**
      * 每个服务器的Nid
      * 自动生成
      */
-    private List<String> selfNidList = new ArrayList<>();
+    private final List<String> selfNidList = new ArrayList<>();
     /**
      * 根据Tracker生成的NodeList
      * 自动生成
@@ -84,7 +79,7 @@ public class Config implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         generateBootNodeList();
         generateSelfNidList();
     }

@@ -15,11 +15,12 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Component
-public class StartServerTask implements PauseOption {
+public class StartServerTask {
     private final DHTServer server;
     private final Config config;
 
-    public StartServerTask(DHTServer server, Config config) {
+    public StartServerTask(DHTServer server,
+                           Config config) {
         this.server = server;
         this.config = config;
     }
@@ -27,7 +28,6 @@ public class StartServerTask implements PauseOption {
     /**
      * 开启DHT服务，利用CountDownLatch类使得所有Channel开启前阻塞当前线程
      */
-    @Override
     public void start() {
         List<Integer> portList = config.getPortList();
         CountDownLatch countDownLatch = new CountDownLatch(portList.size());

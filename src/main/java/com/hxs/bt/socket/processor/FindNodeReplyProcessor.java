@@ -1,5 +1,6 @@
 package com.hxs.bt.socket.processor;
 
+import com.hxs.bt.common.GlobalMonitor;
 import com.hxs.bt.common.manager.NodeManager;
 import com.hxs.bt.pojo.KrpcMessage;
 import com.hxs.bt.pojo.Node;
@@ -25,9 +26,12 @@ import java.net.UnknownHostException;
 @Component
 public class FindNodeReplyProcessor extends AbstractProcessor {
     private final NodeManager nodeManager;
+    private final GlobalMonitor globalMonitor;
 
-    public FindNodeReplyProcessor(NodeManager nodeManager) {
+    public FindNodeReplyProcessor(NodeManager nodeManager,
+                                  GlobalMonitor globalMonitor) {
         this.nodeManager = nodeManager;
+        this.globalMonitor = globalMonitor;
     }
 
     //{"t":"aa", "y":"r", "r":{"id":"0123456789abcdefghij", "nodes":"def456..."}}
@@ -58,8 +62,11 @@ public class FindNodeReplyProcessor extends AbstractProcessor {
                 byte[] nid = ArrayUtils.subarray(nodes, index, index + 20);
                 int port = Utils.bytesToPort(ArrayUtils.subarray(nodes, index + 24, index + 26));
                 boolean addSuccess = nodeManager.add(new Node(new String(nid, CharsetUtil.ISO_8859_1), new InetSocketAddress(ip, port)));
-                // 如果添加node不成功，说明node队列已满，直接退出不再继续添加。
-                if (!addSuccess) return;
+                // 如果添加node不成功，说明node队列已满，直接退出不再继续添加并将FindNode线程的暂停时间+1ms。
+                if (!addSuccess){
+                    globalMonitor.addFindNodeInterval();
+                    return;
+                }
             } catch (UnknownHostException e) {
                 log.info("Node解析出错：" + e.toString());
             } finally {

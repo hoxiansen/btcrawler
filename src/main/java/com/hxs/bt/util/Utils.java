@@ -2,9 +2,8 @@ package com.hxs.bt.util;
 
 import com.hxs.bt.pojo.Node;
 import io.netty.util.CharsetUtil;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.beanutils.BeanUtils;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 /**
@@ -47,5 +46,9 @@ public class Utils {
         System.arraycopy(bytes, 20, ip, 0, ip.length);
         System.arraycopy(bytes, 24, port, 0, 2);
         return new String(bytes, CharsetUtil.ISO_8859_1);
+    }
+
+    public static void main(String[] args) {
+
     }
 }

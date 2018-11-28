@@ -1,15 +1,18 @@
 package com.hxs.bt.task;
 
+import com.hxs.bt.common.GlobalMonitor;
 import com.hxs.bt.common.manager.NodeManager;
 import com.hxs.bt.config.Config;
 import com.hxs.bt.pojo.Node;
 import com.hxs.bt.socket.Sender;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author HJF
@@ -17,43 +20,57 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Slf4j
 @Component
-public class FindNodeTask implements PauseOption {
+public class FindNodeTask implements DisposableBean {
     private final Config config;
     private final Sender sender;
     private final NodeManager nodeManager;
-
-    private final ReentrantLock lock = new ReentrantLock();
-    private final Condition condition = lock.newCondition();
+    private final ThreadPoolExecutor executor;
+    private final GlobalMonitor globalMonitor;
 
     public FindNodeTask(Config config,
                         Sender sender,
-                        NodeManager nodeManager) {
+                        NodeManager nodeManager,
+                        GlobalMonitor globalMonitor) {
         this.config = config;
         this.sender = sender;
         this.nodeManager = nodeManager;
+        this.globalMonitor = globalMonitor;
+        executor = new ThreadPoolExecutor(config.getFindNodeTaskThreadNum(),
+                config.getFindNodeTaskThreadNum(),
+                0,
+                TimeUnit.NANOSECONDS,
+                new SynchronousQueue<>(),
+                new BasicThreadFactory.Builder()
+                        .daemon(true)
+                        .namingPattern("FindNode-%d")
+                        .priority(Thread.NORM_PRIORITY).build(),
+                (r, executor) -> log.error("FindNode线程池溢出！"));
     }
 
     private Node getNode() throws InterruptedException {
         return nodeManager.get();
     }
 
-    @Override
     public void start() {
-        log.info("开始发送FindNode请求");
-        int pauseTime = config.getFindNodeTaskIntervalMS();
         int portNum = config.getPortList().size();
         int threadNum = config.getFindNodeTaskThreadNum();
+        log.info("开始发送FindNode请求，线程数：{}", threadNum);
         for (int i = 0; i < threadNum; i++) {
-            new Thread(() -> {
+            executor.submit(() -> {
                 for (int index = 0; index < portNum; index++) {
                     try {
                         sender.sendFindNode(getNode(), index);
-                        pause(lock, condition, pauseTime, TimeUnit.MILLISECONDS);
+                        Thread.sleep(globalMonitor.getFindNodeInterval());
                     } catch (InterruptedException e) {
                         //...
                     }
                 }
-            }, "FindNode-" + i).start();
+            });
         }
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        executor.shutdown();
     }
 }

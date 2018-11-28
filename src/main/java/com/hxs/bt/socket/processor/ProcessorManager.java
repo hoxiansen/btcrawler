@@ -36,9 +36,8 @@ public class ProcessorManager {
                 config.getProcessorThreadNum(),
                 config.getProcessorThreadNum(),
                 5, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(config.getProcessorThreadNum()*2));
-        executor.setThreadFactory(new ProcessorThreadFactory());
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
+                new LinkedBlockingQueue<>(config.getProcessorThreadNum()*2),new ProcessorThreadFactory());
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
     public void process(byte[] bytes, InetSocketAddress sender, int index) {
@@ -48,7 +47,9 @@ public class ProcessorManager {
                 //采用fastJson的反序列化，bencode解析之后是map，需要map转string，考虑重写一个bencode直接转string
                 KrpcMessage message = JSONObject.parseObject(JSON.toJSONString(krpcMap), KrpcMessage.class);
                 // krpc没有y，没有处理的必要。
-                if (null == message.getY() || "".equals(message.getY())) return;
+                if (null == message.getY() || "".equals(message.getY())) {
+                    return;
+                }
                 message.setSender(sender);
                 message.setIndex(index);
                 beginProcess(message);

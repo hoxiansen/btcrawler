@@ -61,7 +61,9 @@ public class DHTServer {
     @AllArgsConstructor
     @Slf4j
     public static class DHTServerHandler extends SimpleChannelInboundHandler<DatagramPacket> {
-        //countDownLatch用来等待所有的服务器初始化完毕之后再进行下一步
+        /**
+         * countDownLatch用来等待所有的服务器初始化完毕之后再进行下一步
+         */
         private final CountDownLatch countDownLatch;
         private final Sender sender;
         private final ProcessorManager processorManager;

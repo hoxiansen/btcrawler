@@ -1,5 +1,6 @@
 package com.hxs.bt.task;
 
+import com.hxs.bt.common.GlobalMonitor;
 import com.hxs.bt.common.manager.NodeManager;
 import com.hxs.bt.config.Config;
 import com.hxs.bt.pojo.Node;
@@ -14,14 +15,17 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class InitNodeTask implements PauseOption {
+public class InitNodeTask {
     private final Config config;
     private final NodeManager nodeManager;
+    private final GlobalMonitor globalMonitor;
 
     public InitNodeTask(Config config,
-                        NodeManager nodeManager) {
+                        NodeManager nodeManager,
+                        GlobalMonitor globalMonitor) {
         this.config = config;
         this.nodeManager = nodeManager;
+        this.globalMonitor = globalMonitor;
     }
 
     private void addNode() {
@@ -31,22 +35,9 @@ public class InitNodeTask implements PauseOption {
         }
     }
 
-    @Override
     public void start() {
         addNode();
-        Thread monitor = new Thread(() -> {
-            while (true) {
-                if (nodeManager.getSize() == 0) {
-                    addNode();
-                }
-                try {
-                    Thread.sleep(10 * 1000);
-                } catch (InterruptedException e) {
-                    //...
-                }
-            }
-        }, "NodeQueueMonitor");
-        monitor.setDaemon(true);
-        monitor.start();
+        // 开启startNodeQueue监测
+        globalMonitor.startNodeQueueMonitor();
     }
 }
