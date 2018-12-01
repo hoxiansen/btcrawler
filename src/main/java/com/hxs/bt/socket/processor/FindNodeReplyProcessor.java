@@ -64,6 +64,7 @@ public class FindNodeReplyProcessor extends AbstractProcessor {
                 boolean addSuccess = nodeManager.add(new Node(new String(nid, CharsetUtil.ISO_8859_1), new InetSocketAddress(ip, port)));
                 // 如果添加node不成功，说明node队列已满，直接退出不再继续添加并将FindNode线程的暂停时间+1ms。
                 if (!addSuccess){
+                    log.info("Node队列已满，降低FindNode发送速率");
                     globalMonitor.addFindNodeInterval();
                     return;
                 }

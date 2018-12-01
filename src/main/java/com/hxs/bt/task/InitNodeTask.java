@@ -31,6 +31,7 @@ public class InitNodeTask {
     private void addNode() {
         log.info("添加初始Node到NodeQueue");
         for (Node node : config.getBootNodeList()) {
+            log.trace("AddNode:{}",node.getAddress());
             nodeManager.add(node);
         }
     }

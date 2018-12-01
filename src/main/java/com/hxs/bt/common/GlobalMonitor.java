@@ -19,9 +19,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Component
 public class GlobalMonitor implements DisposableBean {
-    private static final int CORE_SIZE = 10;
+    private static final int CORE_SIZE = 5;
     private static final int KEEP_ALIVE = 0;
     private static final int NODE_QUEUE_MONITOR_INTERVAL = 10 * 1000;
+    private static final int FIND_NODE_MONITOR_INTERVAL = 10 * 60 * 1000;
     private final Config config;
     private final NodeManager nodeManager;
     private final ThreadPoolExecutor executor;
@@ -60,20 +61,13 @@ public class GlobalMonitor implements DisposableBean {
      */
     public void startNodeQueueMonitor() {
         executor.submit(() -> {
-            int lastSize = 0;
             while (true) {
-                if (nodeManager.getSize() <= 0) {
+                if (nodeManager.getSize() == 0) {
                     log.info("重新添加初始Node到NodeQueue");
                     for (Node node : config.getBootNodeList()) {
                         nodeManager.add(node);
                     }
                 }
-                if (lastSize > 2 * nodeManager.getSize()) {
-                    if (findNodeIntervalMS.get() > 0) {
-                        findNodeIntervalMS.addAndGet(-1);
-                    }
-                }
-                lastSize = nodeManager.getSize();
                 try {
                     Thread.sleep(NODE_QUEUE_MONITOR_INTERVAL);
                 } catch (InterruptedException e) {
@@ -83,8 +77,17 @@ public class GlobalMonitor implements DisposableBean {
         });
     }
 
+    public void startFindNodeIntervalMonitor() {
+        executor.submit(() -> {
+            while (true) {
+                Thread.sleep(FIND_NODE_MONITOR_INTERVAL);
+                log.info("FindNodeInterval:{}", getFindNodeInterval());
+            }
+        });
+    }
+
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         executor.shutdown();
     }
 }

@@ -52,6 +52,10 @@ public class FindNodeTask implements DisposableBean {
     }
 
     public void start() {
+        if(config.getDebug()){
+            log.info("调试模式下不发送FindNode请求");
+            return;
+        }
         int portNum = config.getPortList().size();
         int threadNum = config.getFindNodeTaskThreadNum();
         log.info("开始发送FindNode请求，线程数：{}", threadNum);
@@ -70,7 +74,7 @@ public class FindNodeTask implements DisposableBean {
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         executor.shutdown();
     }
 }

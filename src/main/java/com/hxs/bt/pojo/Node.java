@@ -3,6 +3,7 @@ package com.hxs.bt.pojo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.net.InetSocketAddress;

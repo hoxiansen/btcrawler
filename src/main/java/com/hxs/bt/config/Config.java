@@ -46,6 +46,11 @@ public class Config implements InitializingBean {
 
     private Boolean handleGetPeersInfoHash = false;
 
+    /**
+     * 是否时调试模式，调试模式下不发送FindNode请求
+     */
+    private Boolean debug = false;
+
     //***********************以上是写在配置文件中的****************************
 
     /**

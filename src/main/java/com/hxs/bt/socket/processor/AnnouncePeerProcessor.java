@@ -4,6 +4,7 @@ import com.hxs.bt.pojo.KrpcMessage;
 import com.hxs.bt.handler.InfoHashHandler;
 import com.hxs.bt.socket.Sender;
 import com.hxs.bt.util.BTUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
  * @author HJF
  * @date 2018/11/19 17:13
  */
+@Slf4j
 @Order(40)
 @Component
 public class AnnouncePeerProcessor extends AbstractProcessor {
@@ -37,6 +39,7 @@ public class AnnouncePeerProcessor extends AbstractProcessor {
         if (!BTUtils.getTokenStr(message.getA().getId()).equals(message.getA().getToken())) {
             return;
         }
+        log.debug("收到Announce_Peer:{}", message);
         sender.sendAnnouncePeerReply(
                 message.getT(),
                 message.getA().getId(),

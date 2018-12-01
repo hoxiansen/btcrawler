@@ -1,6 +1,7 @@
 package com.hxs.bt.config;
 
 import com.dampcake.bencode.Bencode;
+import com.hxs.bt.config.hibernate.HibernateInterceptor;
 import com.hxs.bt.socket.processor.AbstractProcessor;
 import com.hxs.bt.socket.processor.ProcessorManager;
 import io.netty.util.CharsetUtil;
