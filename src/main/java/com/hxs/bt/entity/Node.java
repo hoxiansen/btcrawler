@@ -1,10 +1,8 @@
-package com.hxs.bt.pojo;
+package com.hxs.bt.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.net.InetSocketAddress;
 
