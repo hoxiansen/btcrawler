@@ -29,18 +29,11 @@ public class StartServerTask {
      * 开启DHT服务，利用CountDownLatch类使得所有Channel开启前阻塞当前线程
      */
     public void start() {
-        List<Integer> portList = config.getPortList();
-        CountDownLatch countDownLatch = new CountDownLatch(portList.size());
-        for (int i = 0, len = portList.size(); i < len; i++) {
-            final int index = i;
-            new Thread(() -> server.start(portList.get(index), index, countDownLatch),"Server-"+index+"-Start").start();
-        }
+        new Thread(() -> server.start(config.getPort()), "ServerStart").start();
         try {
-            countDownLatch.await(5, TimeUnit.SECONDS);
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
             log.error("服务器启动时异常退出");
-        } finally {
-            log.info("所有服务器启动完成");
         }
     }
 }

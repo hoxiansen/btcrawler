@@ -1,6 +1,6 @@
 package com.hxs.bt.config;
 
-import com.hxs.bt.pojo.Node;
+import com.hxs.bt.entity.Node;
 import com.hxs.bt.util.BTUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,28 +24,25 @@ import java.util.stream.Collectors;
 @ConfigurationProperties(prefix = "bt")
 public class Config implements InitializingBean {
     /**
-     * DHTServer使用的端口列表，多个端口对应多个Server
+     * DHTServer使用的端口号
      */
-    private List<Integer> portList = new ArrayList<>(6);
+    private Integer port;
     /**
      * 服务启动的Tracker列表
      */
-    private List<String> trackerList = new ArrayList<>(10);
+    private List<String> trackerList;
     /**
-     * 发送FindNode请求所用的线程数量，总量不用乘以port数量
+     * 发送FindNode请求所用的线程数量
      */
-    private Integer findNodeTaskThreadNum = 20;
-    /**
-     * 服务器消息处理器的线程总数，应该与findNodeTaskThreadNum差不多
-     */
-    private Integer processorThreadNum = 20;
+    private Integer findNodeTaskThreadNum = 10;
     /**
      * Node队列最大长度
      */
-    private Integer nodeQueueMaxLength = 102400;
-
+    private Integer nodeQueueMaxLength = 4096;
+    /**
+     * 是否处理getPeer消息送来的infoHash
+     */
     private Boolean handleGetPeersInfoHash = false;
-
     /**
      * 是否时调试模式，调试模式下不发送FindNode请求
      */
@@ -54,10 +51,9 @@ public class Config implements InitializingBean {
     //***********************以上是写在配置文件中的****************************
 
     /**
-     * 每个服务器的Nid
-     * 自动生成
+     * 服务器的Nid
      */
-    private final List<String> selfNidList = new ArrayList<>();
+    public static final String SELF_NID = BTUtils.randNidStr();
     /**
      * 根据Tracker生成的NodeList
      * 自动生成
@@ -74,18 +70,8 @@ public class Config implements InitializingBean {
         }).collect(Collectors.toList());
     }
 
-    /**
-     * 生成NidList
-     */
-    private void generateSelfNidList() {
-        for (int i = 0, len = this.portList.size(); i < len; i++) {
-            this.selfNidList.add(BTUtils.randNidStr());
-        }
-    }
-
     @Override
     public void afterPropertiesSet() {
         generateBootNodeList();
-        generateSelfNidList();
     }
 }

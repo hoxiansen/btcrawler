@@ -3,9 +3,7 @@ package com.hxs.bt.config;
 import com.hxs.bt.config.hibernate.HibernateInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
-import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.Resource;
 import java.util.Map;
 
 /**
@@ -13,7 +11,7 @@ import java.util.Map;
  * @date 2018/11/29 15:01
  */
 @Slf4j
-@Configuration
+@Deprecated
 public class JpaConfig implements HibernatePropertiesCustomizer {
 
     @Override

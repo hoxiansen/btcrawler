@@ -1,9 +1,8 @@
 package com.hxs.bt.task;
 
-import com.hxs.bt.common.GlobalMonitor;
 import com.hxs.bt.common.manager.NodeManager;
 import com.hxs.bt.config.Config;
-import com.hxs.bt.pojo.Node;
+import com.hxs.bt.entity.Node;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -18,27 +17,22 @@ import org.springframework.stereotype.Component;
 public class InitNodeTask {
     private final Config config;
     private final NodeManager nodeManager;
-    private final GlobalMonitor globalMonitor;
 
     public InitNodeTask(Config config,
-                        NodeManager nodeManager,
-                        GlobalMonitor globalMonitor) {
+                        NodeManager nodeManager) {
         this.config = config;
         this.nodeManager = nodeManager;
-        this.globalMonitor = globalMonitor;
     }
 
     private void addNode() {
         log.info("添加初始Node到NodeQueue");
         for (Node node : config.getBootNodeList()) {
-            log.trace("AddNode:{}",node.getAddress());
+            log.trace("AddNode:{}", node.getAddress());
             nodeManager.add(node);
         }
     }
 
     public void start() {
         addNode();
-        // 开启startNodeQueue监测
-        globalMonitor.startNodeQueueMonitor();
     }
 }

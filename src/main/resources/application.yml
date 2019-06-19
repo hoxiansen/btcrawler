@@ -1,7 +1,7 @@
 bt:
-  portList:
-    - 24678
-    - 6881
+  port: 24678
+  nodeQueueMaxLength: 4096
+  findNodeTaskThreadNum: 50
   trackerList:
     - router.utorrent.com:6881
     - router.bittorrent.com:6881
@@ -91,37 +91,11 @@ bt:
     - 101.240.97.213:16001
     - 220.114.101.228:6881
     - 188.235.156.245:4445
-  nodeQueueMaxLength: 204800
-  findNodeTaskThreadNum: 500
-  processorThreadNum: 2000
-  handleGetPeersInfoHash: false
 
 spring:
-  datasource:
-    url: jdbc:mysql://106.12.209.176/btcrawler?useSSL=false&characterEncoding=UTF-8
-    password: 123456
-    username: hxs
-    driver-class-name: com.mysql.jdbc.Driver
-    type: com.alibaba.druid.pool.DruidDataSource
-    druid:
-      maxActive: 100
-      initialSize: 10
-      minIdle: 10
-      minEvictableIdleTimeMillis: 300000
-      validationQuery: select 'x'
-      testOnBorrow: true
-      testWhileIdle: true
-#  quartz:
-#    scheduler-name: quartzScheduler
-##    job-store-type: jdbc
-#    overwrite-existing-jobs: true
-##    jdbc:
-##      initialize-schema: always
-#    properties:
-#      org.quartz.scheduler.instanceName: quartzScheduler
-#      org.quartz.scheduler.instanceId: AUTO
-#      org.quartz.threadPool.threadCount: 3
-
-logging:
-  file: btcrawler.log
-  path: .
+  kafka:
+    bootstrap-servers: 106.12.209.176:9092
+    producer:
+      retries: 0
+      batch-size: 16384 #2^14
+      buffer-memory: 33554432 #2^25

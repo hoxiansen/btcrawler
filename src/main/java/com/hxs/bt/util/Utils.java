@@ -1,8 +1,7 @@
 package com.hxs.bt.util;
 
-import com.hxs.bt.pojo.Node;
+import com.hxs.bt.entity.Node;
 import io.netty.util.CharsetUtil;
-import org.apache.commons.beanutils.BeanUtils;
 
 import java.net.InetSocketAddress;
 
@@ -25,6 +24,7 @@ public class Utils {
         return bytes;
     }
 
+    @Deprecated
     public static String bytesToHexString(byte[] bytes) {
         char[] chars = new char[bytes.length * 2];
         int index = 0;
@@ -49,6 +49,5 @@ public class Utils {
     }
 
     public static void main(String[] args) {
-
     }
 }

@@ -1,18 +1,16 @@
 package com.hxs.bt.task;
 
-import com.hxs.bt.common.GlobalMonitor;
 import com.hxs.bt.common.manager.NodeManager;
 import com.hxs.bt.config.Config;
-import com.hxs.bt.pojo.Node;
+import com.hxs.bt.entity.Node;
 import com.hxs.bt.socket.Sender;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import javax.annotation.Resource;
+import java.util.concurrent.*;
 
 /**
  * @author HJF
@@ -24,27 +22,26 @@ public class FindNodeTask implements DisposableBean {
     private final Config config;
     private final Sender sender;
     private final NodeManager nodeManager;
+
     private final ThreadPoolExecutor executor;
-    private final GlobalMonitor globalMonitor;
 
     public FindNodeTask(Config config,
                         Sender sender,
-                        NodeManager nodeManager,
-                        GlobalMonitor globalMonitor) {
+                        NodeManager nodeManager) {
         this.config = config;
         this.sender = sender;
         this.nodeManager = nodeManager;
-        this.globalMonitor = globalMonitor;
-        executor = new ThreadPoolExecutor(config.getFindNodeTaskThreadNum(),
+        this.executor = new ThreadPoolExecutor(
                 config.getFindNodeTaskThreadNum(),
-                0,
-                TimeUnit.NANOSECONDS,
+                config.getFindNodeTaskThreadNum(),
+                0L,
+                TimeUnit.MILLISECONDS,
                 new SynchronousQueue<>(),
                 new BasicThreadFactory.Builder()
                         .daemon(true)
                         .namingPattern("FindNode-%d")
                         .priority(Thread.NORM_PRIORITY).build(),
-                (r, executor) -> log.error("FindNode线程池溢出！"));
+                (r, executor) -> log.error("FindNode线程池溢出"));
     }
 
     private Node getNode() throws InterruptedException {
@@ -52,21 +49,20 @@ public class FindNodeTask implements DisposableBean {
     }
 
     public void start() {
-        if(config.getDebug()){
+        if (config.getDebug()) {
             log.info("调试模式下不发送FindNode请求");
             return;
         }
-        int portNum = config.getPortList().size();
         int threadNum = config.getFindNodeTaskThreadNum();
         log.info("开始发送FindNode请求，线程数：{}", threadNum);
         for (int i = 0; i < threadNum; i++) {
+            final int index = i;
             executor.submit(() -> {
-                for (int index = 0; index < portNum; index++) {
+                while (!executor.isTerminated()) {
                     try {
-                        sender.sendFindNode(getNode(), index);
-                        Thread.sleep(globalMonitor.getFindNodeInterval());
+                        sender.sendFindNode(getNode());
                     } catch (InterruptedException e) {
-                        //...
+                        log.info("FindNode-" + index + "线程退出");
                     }
                 }
             });

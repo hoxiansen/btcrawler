@@ -1,18 +1,24 @@
 package com.hxs.bt.socket;
 
-import com.hxs.bt.common.factory.DHTServerEventLoopFactory;
-import com.hxs.bt.config.Config;
-import com.hxs.bt.socket.processor.ProcessorManager;
+import com.hxs.bt.disruptor.KrpcEventTranslator;
+import com.hxs.bt.disruptor.event.KrpcEvent;
+import com.lmax.disruptor.dsl.Disruptor;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.CountDownLatch;
+import javax.annotation.Resource;
+import java.net.InetSocketAddress;
 
 /**
  * @author HJF
@@ -21,39 +27,29 @@ import java.util.concurrent.CountDownLatch;
 @Slf4j
 @Component
 public class DHTServer {
-    private final Config config;
-    private final Sender sender;
-    private final ProcessorManager processorManager;
+    @Resource
+    private Sender sender;
+    @Resource
+    private Disruptor<KrpcEvent> disruptor;
+    @Resource
+    private KrpcEventTranslator eventTranslator;
 
-    public DHTServer(Config config,
-                     Sender sender,
-                     ProcessorManager processorManager) {
-        this.config = config;
-        this.sender = sender;
-        this.processorManager = processorManager;
-    }
-
-    public void start(int port, int index, CountDownLatch countDownLatch) {
+    public void start(int port) {
         final EventLoopGroup eventLoopGroup = new NioEventLoopGroup(
-                config.getPortList().size(),
-                new DHTServerEventLoopFactory(index));
+                0,
+                new DefaultThreadFactory("EVENT_LOOP"));
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(eventLoopGroup)
                 .channel(NioDatagramChannel.class)
                 .option(ChannelOption.SO_BROADCAST, true)
-                .option(ChannelOption.SO_SNDBUF, 1 << 20)
-                .option(ChannelOption.SO_RCVBUF, 1 << 20)
-                .handler(new ChannelInitializer<NioDatagramChannel>() {
-                    @Override
-                    protected void initChannel(NioDatagramChannel ch) throws Exception {
-                        ch.pipeline().addLast(new DHTServerHandler(countDownLatch, sender, processorManager, index));
-                    }
-                });
+                .option(ChannelOption.SO_SNDBUF, 1 << 12)
+                .option(ChannelOption.SO_RCVBUF, 1 << 12)
+                .handler(new DHTServerHandler(this.sender, this.disruptor, eventTranslator));
         try {
-            log.info("开启DHT服务器-{},PORT:{}", index, port);
+            log.info("启动DHT服务器,PORT: {}", port);
             bootstrap.bind(port).sync().channel().closeFuture().await();
         } catch (InterruptedException e) {
-            log.info("DHT服务器关闭-{}", index);
+            log.info("关闭DHT服务器");
             eventLoopGroup.shutdownGracefully();
         }
     }
@@ -61,31 +57,33 @@ public class DHTServer {
     @AllArgsConstructor
     @Slf4j
     public static class DHTServerHandler extends SimpleChannelInboundHandler<DatagramPacket> {
-        /**
-         * countDownLatch用来等待所有的服务器初始化完毕之后再进行下一步
-         */
-        private final CountDownLatch countDownLatch;
         private final Sender sender;
-        private final ProcessorManager processorManager;
-        private final int index;
+        private final Disruptor<KrpcEvent> disruptor;
+        private final KrpcEventTranslator eventTranslator;
 
         @Override
         public void channelActive(ChannelHandlerContext ctx) {
-            sender.setChannel(ctx.channel(), index);
-            log.info("服务器-" + index + "启动完成");
-            countDownLatch.countDown();
+            sender.setChannel(ctx.channel());
+            disruptor.start();
+            log.info("服务器启动完成");
         }
 
         @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            log.info("Exception:{}", cause.toString());
+        public void channelInactive(ChannelHandlerContext ctx) {
+            disruptor.shutdown();
+        }
+
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+            log.info("Exception:{}", cause.getMessage());
+            cause.printStackTrace();
         }
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) {
-            byte[] bytes = new byte[msg.content().readableBytes()];
-            msg.content().readBytes(bytes);
-            processorManager.process(bytes, msg.sender(), index);
+            ByteBuf content = msg.content();
+            InetSocketAddress sender = msg.sender();
+            disruptor.publishEvent(eventTranslator, content, sender);
         }
     }
 }
